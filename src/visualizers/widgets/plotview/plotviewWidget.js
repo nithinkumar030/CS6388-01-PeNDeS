@@ -342,7 +342,7 @@ define([
         }
       }
 
-      this.index = this.index + 35;
+      this.index = this.index + 15;
 
       /*if (desc.metaName === "P2T") {
         if (desc.isConnection) {
