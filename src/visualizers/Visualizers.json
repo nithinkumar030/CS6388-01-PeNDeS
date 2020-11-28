@@ -1,0 +1,38 @@
+[
+  {
+    "id": "plotview",
+    "title": "plotview",
+    "panel": "panels/plotview/plotviewPanel",
+    "DEBUG_ONLY": false
+  },
+  {
+    "id": "PlotView",
+    "title": "PlotView",
+    "panel": "panels/PlotView/PlotViewPanel",
+    "DEBUG_ONLY": false
+  },
+  {
+    "id": "PlotView1",
+    "title": "PlotView",
+    "panel": "panels/PlotView/PlotViewPanel",
+    "DEBUG_ONLY": false
+  },
+  {
+    "id": "PlotView2",
+    "title": "PlotView",
+    "panel": "panels/PlotView/PlotViewPanel",
+    "DEBUG_ONLY": false
+  },
+  {
+    "id": "PlotView3",
+    "title": "PlotView",
+    "panel": "panels/PlotView/PlotViewPanel",
+    "DEBUG_ONLY": false
+  },
+  {
+    "id": "PlotView4",
+    "title": "PlotView",
+    "panel": "panels/PlotView/PlotViewPanel",
+    "DEBUG_ONLY": false
+  }
+]

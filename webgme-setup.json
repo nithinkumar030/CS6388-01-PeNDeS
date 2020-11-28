@@ -1,0 +1,44 @@
+{
+  "components": {
+    "visualizers": {
+      "plotview": {
+        "src": "panels/plotview/plotviewPanel",
+        "title": "plotview",
+        "panel": "src/visualizers/panels/plotview",
+        "secondary": false,
+        "widget": "src/visualizers/widgets/plotview"
+      },
+      "PlotView": {
+        "src": "panels/PlotView/PlotViewPanel",
+        "title": "PlotView",
+        "panel": "src/visualizers/panels/PlotView",
+        "secondary": false,
+        "widget": "src/visualizers/widgets/PlotView"
+      }
+    },
+    "seeds": {
+      "PeNDeS": {
+        "src": "src/seeds/PeNDeS"
+      }
+    },
+    "addons": {},
+    "decorators": {},
+    "layouts": {},
+    "plugins": {
+      "PeNDeSClassifierSim": {
+        "src": "src/plugins/PeNDeSClassifierSim",
+        "test": "test/plugins/PeNDeSClassifierSim"
+      }
+    },
+    "routers": {}
+  },
+  "dependencies": {
+    "visualizers": {},
+    "seeds": {},
+    "addons": {},
+    "decorators": {},
+    "layouts": {},
+    "plugins": {},
+    "routers": {}
+  }
+}
