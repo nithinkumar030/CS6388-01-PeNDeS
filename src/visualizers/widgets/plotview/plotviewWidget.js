@@ -22,12 +22,22 @@ define([
     this._initialize();
 
     this._logger.debug("ctor finished");
-    this.index = 0;
+    this.pxindex = 0;
+    this.txindex = 0;
+    this.pyindex = 0;
+    this.tyindex = 0;
+    this.first = true;
+    this.p = [];
     this.place = {};
+    this.t = [];
     this.transition = {};
     this.P2T = [];
     this.T2P = [];
-    this.first = true;
+    this.renderedList = [];
+    /*this.place = {};
+    this.transition = {};
+    this.P2T = [];
+    this.T2P = [];*/
   }
 
   PlotViewWidget.prototype._initialize = function () {
@@ -57,7 +67,7 @@ define([
 
     this._paper.on("element:pointerdown", function (elementView) {
       var currentElement = elementView.model;
-      console.log(currentElement);
+      //console.log(currentElement);
     });
 
     this._place = jointjs.dia.Element.define(
@@ -117,96 +127,83 @@ define([
 
   // Adding/Removing/Updating items
   PlotViewWidget.prototype.addNode = function (desc) {
-    this.initNetwork(desc);
+    this.storeNodes(desc);
+    this.first = this.first + 1;
+    /*if (this.first >= 4) {
+      this.first = 0;
+      //setInterval(this.renderNodes(), 4000);
+      this.renderNodes();
+    }*/
+    this.clearRenderedNodes();
+    this.renderNodes();
   };
 
   PlotViewWidget.prototype.removeNode = function (gmeId) {};
 
   PlotViewWidget.prototype.updateNode = function (desc) {};
 
-  /*PlotViewWidget.prototype.renderArcs = function (PVWidget) {
-    for (var i; i < PVWidget.P2T.length; i++) {
-      var desc = PVWidget.P2T[i];
-      var P2T = new jointjs.shapes.standard.Link();
+  //Actual simulator functions
+  PlotViewWidget.prototype.storeNodes = function (desc) {
+    if (desc) {
+      if (desc.metaName === "Place") {
+        //var placeNode = [desc, place];
 
-      // get the source and destination for this P2T
-      var transition2 = PVWidget.transition[desc.pointerDst];
-      //var transition = transitionNode[1];
+        this.place[desc.id] = desc;
+        this.p.push(desc);
+        //console.log("place: ");
+        //console.log(desc.id);
+      } else if (desc.metaName === "Transition") {
+        //var transitionNode = [desc, transition];
 
-      console.log("transition2: ");
-      console.log(desc.pointerDst);
-
-      var place2 = PVWidget.place[desc.pointerSrc];
-      //var place = placeNode[1];
-
-      console.log("place2: ");
-      console.log(desc.pointerSrc);
-
-      if (place2 && transition2) {
-        P2T.source(place2);
-
-        P2T.target(transition2);
-
-        setTimeout(() => {
-          P2T.findView(PVWidget._paper).sendToken(
-            jointjs.V("circle", { r: 5, fill: "#feb662" }),
-            1500,
-            () => {
-              console.log("token sent");
-              transition2.attr("label/text", "1");
-            }
-          );
-        }, 1000);
-        PVWidget._graph.addCell([P2T]);
-        //this.P2T.push(T2P);
+        this.transition[desc.id] = desc;
+        this.t.push(desc);
+        //console.log("transition: ");
+        //console.log(desc.id);
+      } else if (desc.metaName === "T2P") {
+        if (desc.isConnection) {
+          //console.log("T2P: ");
+          //console.log(desc.id);
+          this.T2P.push(desc);
+        }
+      } else if (desc.metaName === "P2T") {
+        if (desc.isConnection) {
+          //console.log("P2T: ");
+          //console.log(desc.id);
+          this.P2T.push(desc);
+        }
       }
     }
+    //this.renderNodes();
+  };
 
-    for (var j = 0; j < PVWidget.T2P.length; j++) {
-      var T2P = new jointjs.shapes.standard.Link();
-      var desc = PVWidget.T2P[j];
-
-      // get the source and destination for this T2P
-      var transition1 = PVWidget.transition[desc.pointerSrc];
-      //var transition = transitionNode[1];
-
-      console.log("transition1: ");
-      console.log(desc.pointerSrc);
-
-      var place1 = PVWidget.place[desc.pointerDst];
-      //var place = placeNode[1];
-
-      console.log("place1: ");
-      console.log(desc.pointerDst);
-
-      if (transition1 && place1) {
-        T2P.source(transition1);
-
-        T2P.target(place1);
-
-        setTimeout(() => {
-          T2P.findView(PVWidget._paper).sendToken(
-            jointjs.V("circle", { r: 5, fill: "#feb662" }),
-            1500,
-            () => {
-              console.log("token sent");
-              transition1.attr("label/text", "1");
-            }
-          );
-        }, 1000);
-        PVWidget._graph.addCell([T2P]);
-        //this.T2P.push(T2P);
-      }
+  PlotViewWidget.prototype.clearRenderedNodes = function () {
+    var plen = this.renderedList.length;
+    for (var i = 0; i < plen; i++) {
+      this._graph.removeCells([this.renderedList[i]]);
     }
-  };*/
+  };
+
+  PlotViewWidget.prototype.renderNodes = function () {
+    //console.log("renderNodes:");
+    //console.log(this.p);
+    var plen = this.p.length;
+    for (var i = 0; i < plen; i++) {
+      this.render(this.p[i]);
+    }
+
+    for (var i = 0; i < this.t.length; i++) {
+      this.render(this.t[i]);
+    }
+    for (var i = 0; i < this.T2P.length; i++) {
+      this.render(this.T2P[i]);
+    }
+    for (var i = 0; i < this.P2T.length; i++) {
+      this.render(this.P2T[i]);
+    }
+  };
 
   //Actual simulator functions
-  PlotViewWidget.prototype.initNetwork = function (desc) {
-    /*if (this.first === true) {
-      this.first = false;
-      setTimeout(this.renderArc(this), 4000);
-    }*/
-
+  PlotViewWidget.prototype.render = function (desc) {
     if (desc) {
       const pn = jointjs.shapes.pn;
       var place = 0;
@@ -215,16 +212,23 @@ define([
       var P2T = 0;
 
       var name = desc.name;
-      var attr = desc.attributeValue.toString();
+      var attr = [];
+      for (i = 0; i < desc.attributeValue.length; i++) {
+        attr.push(desc.attributeValue[i].toString());
+        console.log("place attr:");
+        console.log(attr);
+      }
 
       if (desc.metaName === "Place") {
         //if (core.is_type_of(desc.node, this.META["Place"])) {
         place = new pn.Place({
-          position: { x: 200 + this.index, y: 200 + this.index },
+          position: { x: 100 + this.pxindex, y: 10 + this.pyindex },
+
           attrs: {
             text: {
-              text: name,
+              text: name + " (" + attr[0] + ")",
               "stroke-width": 3,
+              fill: "#7c68fc",
             },
             label: {
               text: "other",
@@ -232,22 +236,26 @@ define([
           },
           tokens: 3,
         });
+        this.pxindex = this.pxindex + 15;
+        this.pyindex = this.pyindex + 15;
 
         //var placeNode = [desc, place];
 
         this.place[desc.id] = place;
-        console.log("place: ");
-        console.log(desc.id);
+        //console.log("place: ");
+        //console.log(desc.id);
 
         this._graph.addCell([place]);
+        this.renderedList.push(place);
         //this.renderArcs();
       } else if (desc.metaName === "Transition") {
         transition = new pn.Transition({
-          position: { x: 500 + this.index, y: 160 + this.index },
+          position: { x: 300 + this.txindex, y: 10 + this.tyindex },
           attrs: {
             text: {
               text: desc.name,
               "stroke-width": 3,
+              fill: "#7c68fc",
             },
             label: {
               text: "produce",
@@ -259,14 +267,17 @@ define([
             },
           },
         });
+        this.txindex = this.txindex + 15;
+        this.tyindex = this.tyindex + 15;
 
         //var transitionNode = [desc, transition];
 
         this.transition[desc.id] = transition;
-        console.log("transition: ");
-        console.log(desc.id);
+        //console.log("transition: ");
+        //console.log(desc.id);
 
         this._graph.addCell([transition]);
+        this.renderedList.push(transition);
         //this.renderArcs();
       } else if (desc.metaName === "T2P") {
         if (desc.isConnection) {
@@ -276,8 +287,8 @@ define([
           var transition1 = this.transition[desc.pointerSrc];
           //var transition = transitionNode[1];
 
-          console.log("transition1: ");
-          console.log(desc.pointerSrc);
+          //console.log("transition1: ");
+          //console.log(desc.pointerSrc);
 
           var place1 = this.place[desc.pointerDst];
           //var place = placeNode[1];
@@ -286,25 +297,26 @@ define([
           //console.log("place1: ");
           //console.log(desc.pointerDst);
 
-          //if (transition1 && place1) {
-          T2P.source(transition1);
+          if (transition1 && place1) {
+            T2P.source(transition1);
 
-          T2P.target(place1);
+            T2P.target(place1);
 
-          setTimeout(() => {
-            T2P.findView(this._paper).sendToken(
-              jointjs.V("circle", { r: 5, fill: "#feb662" }),
-              1500,
-              () => {
-                console.log("token sent");
-                //transition1.attr("label/text", "1");
-              }
-            );
-          }, 1000);
-          this._graph.addCell([T2P]);
+            /*setTimeout(() => {
+              T2P.findView(this._paper).sendToken(
+                jointjs.V("circle", { r: 5, fill: "#feb662" }),
+                1500,
+                () => {
+                  console.log("token sent");
+                  //transition1.attr("label/text", "1");
+                }
+              );
+            }, 1000);*/
+            this._graph.addCell([T2P]);
+            this.renderedList.push(T2P);
 
-          this.T2P.push(T2P);
-          //}
+            //this.T2P.push(T2P);
+          }
         }
       } else if (desc.metaName === "P2T") {
         if (desc.isConnection) {
@@ -322,11 +334,11 @@ define([
           //console.log(desc.pointerSrc);
 
           //if (place2 && transition2) {
-          P2T.source(place2);
+          P2T.source(this.place[desc.pointerSrc]);
 
-          P2T.target(transition2);
+          P2T.target(this.transition[desc.pointerDst]);
 
-          setTimeout(() => {
+          /*setTimeout(() => {
             P2T.findView(this._paper).sendToken(
               jointjs.V("circle", { r: 5, fill: "#feb662" }),
               1500,
@@ -335,94 +347,15 @@ define([
                 //transition2.attr("label/text", "1");
               }
             );
-          }, 1000);
+          }, 1000);*/
           this._graph.addCell([P2T]);
-          this.P2T.push(T2P);
+          this.renderedList.push(P2T);
+          //this.P2T.push(T2P);
           //}
         }
       }
-
-      this.index = this.index + 15;
-
-      /*if (desc.metaName === "P2T") {
-        if (desc.isConnection) {
-          var transition1 = new pn.Transition({
-            position: { x: 500, y: 160 },
-            attrs: {
-              text: {
-                text: desc.pointerSrc,
-                "stroke-width": 3,
-              },
-              label: {
-                text: "produce",
-                fill: "#fe854f",
-              },
-              label: {
-                fill: "#9586fd",
-                stroke: "#9586fd",
-              },
-            },
-          });
-          this._graph.addCell([transition1]);
-
-          var transition2 = new pn.Transition({
-            position: { x: 500, y: 160 },
-            attrs: {
-              text: {
-                text: desc.pointerDst,
-                "stroke-width": 3,
-              },
-              label: {
-                text: "produce",
-                fill: "#fe854f",
-              },
-              label: {
-                fill: "#9586fd",
-                stroke: "#9586fd",
-              },
-            },
-          });
-          this._graph.addCell([transition2]);
-        }
-      }*/
-
-      /*else if (desc.meta === "T2P") {
-        T2P = new jointjs.shapes.standard.Link();
-        T2P.source(transition);
-        T2P.target(place);
-      } else if (desc.meta === "P2T") {
-        P2T = new jointjs.shapes.standard.Link();
-        P2T.source(place);
-        P2T.target(transition);
-      }*/
-
-      /*const place1 = new pn.Place({
-        position: { x: 100, y: 100 },
-        attrs: {
-          label: {
-            text: "ready",
-            fill: "#7c68fc",
-          },
-          root: {
-            stroke: "#9586fd",
-            "stroke-width": 3,
-          },
-        },
-        tokens: 3,
-      });*/
-
-      //this._graph.addCell([place, transition, T2P, P2T]);
-
-      /*setTimeout(() => {
-        T2P.findView(this._paper).sendToken(
-          jointjs.V("circle", { r: 10, fill: "#feb662" }),
-          2000,
-          () => {
-            console.log("token sent");
-            place2.attr("label/text", "1");
-          }
-        );
-      }, 1000);*/
+    } else {
+      console.log("no desc!");
     }
   };
 

@@ -85,11 +85,12 @@ define([
     var metaId = node.getBaseTypeId();
     var metaNode = this._client.getNode(metaId);
 
-    var attribNames = node.getOwnAttributeNames();
-    var aName = 0;
+    var attribNames = node.getAttributeNames();
+    var aName = [];
 
     for (var i = 0; i < attribNames.length; i++) {
-      aName = node.getOwnAttribute(attribNames[i]);
+      aName.push(node.getAttribute(attribNames[i]));
+      //console.log("attribname:");
       //console.log(aName);
     }
 
